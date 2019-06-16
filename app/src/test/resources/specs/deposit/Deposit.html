@@ -1,0 +1,56 @@
+<html xmlns:e="http://exam.extension.io" xmlns:concordion="http://www.concordion.org/2007/concordion">
+<body>
+<h1>Deposit</h1>
+<p>You can make a deposit into the user account.</p>
+<e:summary/>
+<e:example name="Happy path">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>10.5, EUR</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        Try to deposit <code concordion:execute="#result = deposit(#user, #TEXT)">0.5</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">ok</code> and account was updated:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>11, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+<e:example name="Deposit into not existed account">
+    <e:given>
+        There is no accounts of user <code concordion:set="#user">1</code>.
+        <e:db-set table="account"/>
+    </e:given>
+    <e:when>
+        Try to deposit <code concordion:execute="#result = deposit(#user, #TEXT)">1</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">ok</code> and NEW account was created:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>1, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+<e:example name="Deposit negative amount">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>10, EUR</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        Try to deposit <code concordion:execute="#result = deposit(#user, #TEXT)">-1</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">negative_amount</code> and account was NOT updated:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>10, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+</body>
+</html>

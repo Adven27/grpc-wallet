@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package wallet;
+
+option java_multiple_files = true;
+option java_package = "bp.wallet.demo";
+option java_outer_classname = "WalletProto";
+
+service Wallet {
+    rpc Balance (BalanceRequest) returns (BalanceResponse) {}
+    rpc Deposit (WalletRequest) returns (WalletResponse) {}
+    rpc Withdraw (WalletRequest) returns (WalletResponse) {}
+    rpc WithdrawS (stream WalletRequest) returns (WalletResponse) {}
+}
+
+message WalletRequest {
+    string user = 1;
+    double amount = 2;
+    string currency = 3;
+}
+
+message WalletResponse {
+    string message = 1;
+}
+
+message BalanceRequest {
+    string user = 1;
+}
+
+message BalanceResponse {
+    map<string, double> balances = 1;
+}

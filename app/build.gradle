@@ -1,0 +1,85 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.2.0.M3'
+    id 'java'
+    id 'idea'
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+group = 'bp.wallet'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven { url 'https://repo.spring.io/snapshot' }
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+
+def grpcVersion = '1.21.0'
+def protobufVersion = '3.7.1'
+def protocVersion = protobufVersion
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.liquibase:liquibase-core'
+    implementation "io.grpc:grpc-all:${grpcVersion}"
+
+    runtimeOnly 'mysql:mysql-connector-java'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation "org.testcontainers:testcontainers:1.11.3"
+    implementation "org.testcontainers:mysql:1.11.3"
+
+    testImplementation "org.adven.concordion.ext:exam:1.1.1"
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        exclude group: 'junit', module: 'junit'
+    }
+}
+
+test {
+//    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+    systemProperties['concordion.output.dir'] = "$reporting.baseDir/spec"
+    outputs.upToDateWhen { false }   // force tests to run even if code hasn't changed
+    include 'bp/wallet/demo/bl/*/**', '**/Specs.*'
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
+
+idea {
+    module {
+        sourceDirs += file("${projectDir}/src/generated/main/java")
+        sourceDirs += file("${projectDir}/src/generated/main/grpc")
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "proto": "../app/src/main/proto/wallet.proto",
+  "call": "wallet.Wallet.Balance",
+  "concurrency": 500,
+  "connections": 2,
+  "total": 1000,
+  "data": {"user": "1"},
+  "metadata": {
+    "trace_id": "{{.RequestNumber}}",
+    "timestamp": "{{.TimestampUnix}}"
+  },
+  "max-duration": "30s",
+  "host": "0.0.0.0:50051",
+  "insecure": true
+}

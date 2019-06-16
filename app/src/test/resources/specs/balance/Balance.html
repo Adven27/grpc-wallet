@@ -1,0 +1,37 @@
+<html xmlns:e="http://exam.extension.io" xmlns:concordion="http://www.concordion.org/2007/concordion">
+<body>
+<h1>Balance</h1>
+<p>You can request balance of user account.</p>
+<e:summary/>
+<e:example name="Happy path">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>11, EUR</row>
+            <row>22, USD</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        <span concordion:execute="#result = balance(#user)">Try to request balance</span>
+    </e:when>
+    <e:then>
+        Result is: [
+        <code concordion:assert-equals="#result.eur">11.0</code> EUR;
+        <code concordion:assert-equals="#result.usd">22.0</code> USD
+        ]
+    </e:then>
+</e:example>
+<e:example name="Balance of not existed account">
+    <e:given>
+        There is no accounts of user <code concordion:set="#user">1</code>.
+        <e:db-set table="account"/>
+    </e:given>
+    <e:when>
+        <span concordion:execute="#result = balance(#user)">Try to request balance</span>
+    </e:when>
+    <e:then>
+        Result is <code concordion:assert-true="#result.isEmpty()">empty</code>
+    </e:then>
+</e:example>
+</body>
+</html>

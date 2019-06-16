@@ -1,0 +1,71 @@
+<html xmlns:e="http://exam.extension.io" xmlns:concordion="http://www.concordion.org/2007/concordion">
+<body>
+<h1>Withdraw</h1>
+<p>You can withdraw money from user account.</p>
+<e:summary/>
+<e:example name="Happy path">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>10.5, EUR</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        Try to withdraw <code concordion:execute="#result = withdraw(#user, #TEXT)">0.5</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">ok</code> and account was updated:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>10, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+<e:example name="Lack of funds">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>1, EUR</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        Try to withdraw <code concordion:execute="#result = withdraw(#user, #TEXT)">10</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">insufficient_funds</code> and account was NOT updated:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>1, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+<e:example name="Withdraw from not existed account">
+    <e:given>
+        There is no accounts of user <code concordion:set="#user">1</code>.
+        <e:db-set table="account"/>
+    </e:given>
+    <e:when>
+        Try to withdraw <code concordion:execute="#result = withdraw(#user, #TEXT)">1</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">insufficient_funds</code> and account was NOT created:
+        <e:db-check table="account"/>
+    </e:then>
+</e:example>
+<e:example name="Withdraw negative amount">
+    <e:given>
+        There is user <code concordion:set="#user">1</code> account:
+        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+            <row>10, EUR</row>
+        </e:db-set>
+    </e:given>
+    <e:when>
+        Try to withdraw <code concordion:execute="#result = withdraw(#user, #TEXT)">-1</code> EUR
+    </e:when>
+    <e:then>
+        Response is <code concordion:assert-equals="#result">negative_amount</code> and account was NOT updated:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>10, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+</body>
+</html>
