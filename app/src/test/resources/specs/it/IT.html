@@ -1,0 +1,98 @@
+<html xmlns:e="http://exam.extension.io" xmlns:cc="http://www.concordion.org/2007/concordion">
+<body>
+<h3>Integration test scenario:</h3>
+<ol>
+    <li>Make a withdrawal of USD 200 for user with id 1. Must return "insufficient_funds".</li>
+    <li>Make a deposit of USD 100 to user with id 1.</li>
+    <li>Check that all balances are correct</li>
+    <li>Make a withdrawal of USD 200 for user with id 1. Must return "insufficient_funds".</li>
+    <li>Make a deposit of EUR 100 to user with id 1.</li>
+    <li>Check that all balances are correct</li>
+    <li>Make a withdrawal of USD 200 for user with id 1. Must return "insufficient_funds".</li>
+    <li>Make a deposit of USD 100 to user with id 1.</li>
+    <li>Check that all balances are correct</li>
+    <li>Make a withdrawal of USD 200 for user with id 1. Must return "ok".</li>
+    <li>Check that all balances are correct</li>
+    <li>Make a withdrawal of USD 200 for user with id 1. Must return "insufficient_funds".</li>
+</ol>
+<e:example name="Scenario">
+    <e:given>There is user with id <code cc:set="#user">1</code> without accounts: <e:db-set table="account"/></e:given>
+    <e:when>1. Make a withdrawal of <code cc:set="#currency">USD</code> <code cc:execute="#result = withdraw(#user, #TEXT, #currency)">200</code>.</e:when>
+    <e:then>Must return <code cc:assert-equals="#result">insufficient_funds</code> and account: <e:db-check table="account"/></e:then>
+    <e:when>2. Make a deposit of <code cc:set="#currency">USD</code> <code cc:execute="#result = deposit(#user, #TEXT, #currency)">100</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">ok</code> and account:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>100, USD</row>
+        </e:db-check>
+    </e:then>
+    <e:when><span cc:execute="#result = balance(#user)">3. Check that all balances are correct</span></e:when>
+    <e:then>Result is: [ <code cc:assert-equals="#result.usd">100.0</code> USD ]</e:then>
+    <e:when>4. Make a withdrawal of <code cc:set="#currency">USD</code> <code cc:execute="#result = withdraw(#user, #TEXT, #currency)">200</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">insufficient_funds</code> and account:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>100, USD</row>
+        </e:db-check>
+    </e:then>
+    <e:when>5. Make a deposit of <code cc:set="#currency">EUR</code> <code cc:execute="#result = deposit(#user, #TEXT, #currency)">100</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">ok</code> and accounts:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>100, USD</row>
+            <row>100, EUR</row>
+        </e:db-check>
+    </e:then>
+    <e:when><span cc:execute="#result = balance(#user)">6. Check that all balances are correct</span></e:when>
+    <e:then>Result is: [
+        <code cc:assert-equals="#result.usd">100.0</code> USD
+        <code cc:assert-equals="#result.eur">100.0</code> EUR
+        ]
+    </e:then>
+    <e:when>7. Make a withdrawal of <code cc:set="#currency">USD</code> <code cc:execute="#result = withdraw(#user, #TEXT, #currency)">200</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">insufficient_funds</code> and accounts:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>100, USD</row>
+            <row>100, EUR</row>
+        </e:db-check>
+    </e:then>
+    <e:when>8. Make a deposit of <code cc:set="#currency">USD</code> <code cc:execute="#result = deposit(#user, #TEXT, #currency)">100</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">ok</code> and account:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>200, USD</row>
+            <row>100, EUR</row>
+        </e:db-check>
+    </e:then>
+    <e:when><span cc:execute="#result = balance(#user)">9. Check that all balances are correct</span></e:when>
+    <e:then>Result is: [
+        <code cc:assert-equals="#result.usd">200.0</code> USD
+        <code cc:assert-equals="#result.eur">100.0</code> EUR
+        ]
+    </e:then>
+    <e:when>10. Make a withdrawal of <code cc:set="#currency">USD</code> <code cc:execute="#result = withdraw(#user, #TEXT, #currency)">200</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">ok</code> and accounts:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>0, USD</row>
+            <row>100, EUR</row>
+        </e:db-check>
+    </e:then>
+    <e:when><span cc:execute="#result = balance(#user)">11. Check that all balances are correct</span></e:when>
+    <e:then>Result is: [
+        <code cc:assert-equals="#result.usd">0.0</code> USD
+        <code cc:assert-equals="#result.eur">100.0</code> EUR
+        ]
+    </e:then>
+    <e:when>12. Make a withdrawal of <code cc:set="#currency">USD</code> <code cc:execute="#result = withdraw(#user, #TEXT, #currency)">200</code>.</e:when>
+    <e:then>
+        Must return <code cc:assert-equals="#result">insufficient_funds</code> and account:
+        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+            <row>0, USD</row>
+            <row>100, EUR</row>
+        </e:db-check>
+    </e:then>
+</e:example>
+</body>
+</html>

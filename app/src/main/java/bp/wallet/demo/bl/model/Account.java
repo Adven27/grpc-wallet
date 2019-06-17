@@ -19,7 +19,7 @@ public class Account {
     public BigDecimal balance;
 
     @Version
-    private long version;
+    private Long version;
 
     public Account(long user, String currency, BigDecimal balance) {
         this(new AccountId(user, currency), balance);

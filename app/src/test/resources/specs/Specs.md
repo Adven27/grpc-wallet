@@ -1,5 +1,9 @@
 ## API
 
-- [Deposit]( deposit/Deposit.md "c:run")
-- [Withdraw]( withdraw/Withdraw.md "c:run")
-- [Balance]( balance/Balance.md "c:run")
+- [Deposit]( deposit/Deposit.html "c:run")
+- [Withdraw]( withdraw/Withdraw.html "c:run")
+- [Balance]( balance/Balance.html "c:run")
+
+## Integration Test
+
+- [Integration test scenario]( it/IT.html "c:run")

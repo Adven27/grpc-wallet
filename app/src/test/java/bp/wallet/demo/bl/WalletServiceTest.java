@@ -4,6 +4,8 @@ import bp.wallet.demo.bl.model.Account;
 import bp.wallet.demo.bl.model.AccountId;
 import bp.wallet.demo.bl.model.AccountRepo;
 import org.junit.Test;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -54,6 +56,22 @@ public class WalletServiceTest {
     }
 
     @Test
+    public void depositConcurrentAccountCreation_shouldReturnError() {
+        when(repo.save(any())).thenThrow(DataIntegrityViolationException.class);
+
+        assertThatThrownBy(() -> sut.deposit(ACC_EUR.getUser(), TEN, ACC_EUR.getCurrency()))
+            .isExactlyInstanceOf(WalletService.StaleState.class);
+    }
+
+    @Test
+    public void depositConcurrentModification_shouldReturnError() {
+        when(repo.save(any())).thenThrow(ObjectOptimisticLockingFailureException.class);
+
+        assertThatThrownBy(() -> sut.deposit(ACC_EUR.getUser(), TEN, ACC_EUR.getCurrency()))
+            .isExactlyInstanceOf(WalletService.StaleState.class);
+    }
+
+    @Test
     public void withdrawExistedAccount_shouldSaveDecreasedBalance() {
         when(repo.findById(ACC_EUR)).thenReturn(Optional.of(accountWithBalance(TEN)));
 
@@ -82,6 +100,15 @@ public class WalletServiceTest {
                 .isExactlyInstanceOf(WalletService.InsufficientFunds.class);
         verify(repo).findById(ACC_EUR);
         verifyNoMoreInteractions(repo);
+    }
+
+    @Test
+    public void withdrawConcurrentModification_shouldReturnError() {
+        when(repo.findById(ACC_EUR)).thenReturn(Optional.of(accountWithBalance(TEN)));
+        when(repo.save(any())).thenThrow(ObjectOptimisticLockingFailureException.class);
+
+        assertThatThrownBy(() -> sut.withdraw(ACC_EUR.getUser(), TEN, ACC_EUR.getCurrency()))
+            .isExactlyInstanceOf(WalletService.StaleState.class);
     }
 
     @Test

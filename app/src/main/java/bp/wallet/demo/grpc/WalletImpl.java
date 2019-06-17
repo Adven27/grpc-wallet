@@ -46,7 +46,7 @@ class WalletImpl extends WalletGrpc.WalletImplBase {
             service.deposit(parseInt(req.getUser()), toBigDecimal(req.getAmount()), req.getCurrency());
         } catch (WalletService.NegativeAmount e) {
             return "negative_amount";
-        } catch (ObjectOptimisticLockingFailureException | DataIntegrityViolationException e) {
+        } catch (WalletService.StaleState e) {
             return "stale_state";
         }
         return "ok";
@@ -65,7 +65,7 @@ class WalletImpl extends WalletGrpc.WalletImplBase {
             return "insufficient_funds";
         } catch (WalletService.NegativeAmount e) {
             return "negative_amount";
-        } catch (ObjectOptimisticLockingFailureException | DataIntegrityViolationException e) {
+        } catch (WalletService.StaleState e) {
             return "stale_state";
         }
         return "ok";

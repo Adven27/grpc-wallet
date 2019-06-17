@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -41,7 +42,7 @@ public class WalletClient {
             log.info("Deposit status: " + response.getMessage());
 
             if (needRetry(response)) {
-                log.info("retrying deposit...");
+                waitRandomTime("retrying deposit in {}s...");
                 deposit(user, amount, currency);
             }
         } catch (StatusRuntimeException e) {
@@ -58,7 +59,7 @@ public class WalletClient {
             log.info("Withdraw status: " + response.getMessage());
 
             if (needRetry(response)) {
-                log.info("retrying withdraw...");
+                waitRandomTime("retrying withdraw in {}s...");
                 withdraw(user, amount, currency);
             }
         } catch (StatusRuntimeException e) {
@@ -77,6 +78,16 @@ public class WalletClient {
         }
         log.info("Balances: " + balances);
         return balances;
+    }
+
+    private void waitRandomTime(String msg) {
+        try {
+            int sleep = new Random().nextInt(5);
+            log.info(msg, sleep);
+            Thread.sleep(sleep * 1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean needRetry(WalletResponse response) {

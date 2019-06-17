@@ -1,11 +1,14 @@
 package specs;
 
+import bp.wallet.demo.BalanceRequest;
 import bp.wallet.demo.WalletApp;
 import bp.wallet.demo.WalletGrpc;
+import bp.wallet.demo.WalletRequest;
 import com.adven.concordion.extensions.exam.ExamExtension;
 import io.grpc.ManagedChannel;
 import org.concordion.api.AfterSuite;
 import org.concordion.api.BeforeSuite;
+import org.concordion.api.MultiValueResult;
 import org.concordion.api.extension.Extension;
 import org.concordion.api.option.ConcordionOptions;
 import org.concordion.integration.junit4.ConcordionRunner;
@@ -21,9 +24,10 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import java.util.concurrent.TimeUnit;
 
 import static io.grpc.ManagedChannelBuilder.forAddress;
+import static org.concordion.api.MultiValueResult.multiValueResult;
 
 @RunWith(ConcordionRunner.class)
-@ConcordionOptions(declareNamespaces = {"c", "http://www.concordion.org/2007/concordion", "e", ExamExtension.NS})
+@ConcordionOptions(declareNamespaces = {"cc", "http://www.concordion.org/2007/concordion", "e", ExamExtension.NS})
 public class Specs {
     private static final Logger LOG = LoggerFactory.getLogger(Specs.class);
     private static final GenericContainer DB = startDb();
@@ -32,7 +36,7 @@ public class Specs {
     private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private static ManagedChannel CHANNEL;
 
-    protected static WalletGrpc.WalletBlockingStub grpcTester;
+    private static WalletGrpc.WalletBlockingStub grpcTester;
 
     private ConfigurableApplicationContext sut;
 
@@ -87,5 +91,39 @@ public class Specs {
         } finally {
             CHANNEL.shutdownNow();
         }
+    }
+
+    public MultiValueResult balance(String user) {
+        MultiValueResult result = multiValueResult();
+        grpcTester.balance(request(user)).getBalancesMap().forEach((key, val) -> result.with(key.toLowerCase(), val));
+        return result;
+    }
+
+    private BalanceRequest request(String user) {
+        return BalanceRequest.newBuilder().setUser(user).build();
+    }
+
+    public String deposit(String user, String amount) {
+        return deposit(user, amount, "EUR");
+    }
+
+    public String deposit(String user, String amount, String currency) {
+        return grpcTester.deposit(request(user, amount, currency)).getMessage();
+    }
+
+    public String withdraw(String user, String amount) {
+        return withdraw(user, amount, "EUR");
+    }
+
+    public String withdraw(String user, String amount, String currency) {
+        return grpcTester.withdraw(request(user, amount, currency)).getMessage();
+    }
+
+    private WalletRequest request(String user, String amount, String currency) {
+        return WalletRequest.newBuilder()
+            .setAmount(Double.valueOf(amount))
+            .setCurrency(currency)
+            .setUser(user)
+            .build();
     }
 }

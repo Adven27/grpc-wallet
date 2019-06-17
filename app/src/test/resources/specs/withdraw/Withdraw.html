@@ -6,7 +6,7 @@
 <e:example name="Happy path">
     <e:given>
         There is user <code concordion:set="#user">1</code> account:
-        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+        <e:db-set table="account" cols="user=${#user}, *balance, currency, version=0">
             <row>10.5, EUR</row>
         </e:db-set>
     </e:given>
@@ -15,7 +15,7 @@
     </e:when>
     <e:then>
         Response is <code concordion:assert-equals="#result">ok</code> and account was updated:
-        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+        <e:db-check table="account" cols="user=${#user}, *balance, currency, version=1">
             <row>10, EUR</row>
         </e:db-check>
     </e:then>
@@ -23,7 +23,7 @@
 <e:example name="Lack of funds">
     <e:given>
         There is user <code concordion:set="#user">1</code> account:
-        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+        <e:db-set table="account" cols="user=${#user}, *balance, currency, version=0">
             <row>1, EUR</row>
         </e:db-set>
     </e:given>
@@ -32,7 +32,7 @@
     </e:when>
     <e:then>
         Response is <code concordion:assert-equals="#result">insufficient_funds</code> and account was NOT updated:
-        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+        <e:db-check table="account" cols="user=${#user}, *balance, currency, version=0">
             <row>1, EUR</row>
         </e:db-check>
     </e:then>
@@ -53,7 +53,7 @@
 <e:example name="Withdraw negative amount">
     <e:given>
         There is user <code concordion:set="#user">1</code> account:
-        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+        <e:db-set table="account" cols="user=${#user}, *balance, currency, version=0">
             <row>10, EUR</row>
         </e:db-set>
     </e:given>
@@ -62,7 +62,7 @@
     </e:when>
     <e:then>
         Response is <code concordion:assert-equals="#result">negative_amount</code> and account was NOT updated:
-        <e:db-check table="account" cols="user=${#user}, *balance, currency">
+        <e:db-check table="account" cols="user=${#user}, *balance, currency, version=0">
             <row>10, EUR</row>
         </e:db-check>
     </e:then>

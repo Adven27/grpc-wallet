@@ -3,6 +3,8 @@ package bp.wallet.demo.bl;
 import bp.wallet.demo.bl.model.Account;
 import bp.wallet.demo.bl.model.AccountId;
 import bp.wallet.demo.bl.model.AccountRepo;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,7 +25,7 @@ public class WalletService {
         requireNotNegative(amount);
         Account account = repo.findById(new AccountId(user, currency)).orElse(new Account(user, currency, ZERO));
         account.deposit(amount);
-        repo.save(account);
+        save(account);
     }
 
     public void withdraw(long user, BigDecimal amount, String currency) {
@@ -32,11 +34,19 @@ public class WalletService {
         if (account.withdraw(amount).doubleValue() < 0.0) {
             throw new InsufficientFunds();
         }
-        repo.save(account);
+        save(account);
     }
 
     public Map<String, BigDecimal> getBalance(int user) {
         return repo.findByAccountIdUser(user).stream().collect(toMap(Account::getCurrency, Account::getBalance));
+    }
+
+    private void save(Account account) {
+        try {
+            repo.save(account);
+        } catch (ObjectOptimisticLockingFailureException | DataIntegrityViolationException e) {
+            throw new StaleState();
+        }
     }
 
     private static void requireNotNegative(BigDecimal amount) {
@@ -49,5 +59,8 @@ public class WalletService {
     }
 
     public static class InsufficientFunds extends RuntimeException {
+    }
+
+    public static class StaleState extends RuntimeException {
     }
 }
