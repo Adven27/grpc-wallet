@@ -6,7 +6,7 @@
 <e:example name="Happy path">
     <e:given>
         There is user <code concordion:set="#user">1</code> account:
-        <e:db-set table="account" cols="user=${#user}, *balance, currency">
+        <e:db-set table="account" cols="user={{user}}, *balance, currency">
             <row>11, EUR</row>
             <row>22, USD</row>
         </e:db-set>

@@ -4,7 +4,8 @@ import bp.wallet.demo.BalanceRequest;
 import bp.wallet.demo.WalletApp;
 import bp.wallet.demo.WalletGrpc;
 import bp.wallet.demo.WalletRequest;
-import com.adven.concordion.extensions.exam.ExamExtension;
+import com.adven.concordion.extensions.exam.core.ExamExtension;
+import com.adven.concordion.extensions.exam.db.DbPlugin;
 import io.grpc.ManagedChannel;
 import org.concordion.api.AfterSuite;
 import org.concordion.api.BeforeSuite;
@@ -42,8 +43,9 @@ public class Specs {
 
     @Extension
     @SuppressWarnings("unused")
-    private final ExamExtension exam = new ExamExtension().
-            db().url(JDBC_URL).user(DB_USER).password(DB_USER).schema("test").driver(JDBC_DRIVER).end();
+    private final ExamExtension exam = new ExamExtension().withPlugins(
+        new DbPlugin(JDBC_DRIVER, JDBC_URL, DB_USER, DB_USER, "test")
+    );
 
     @BeforeSuite
     public void setUp() {
@@ -71,10 +73,10 @@ public class Specs {
 
     private static GenericContainer startDb() {
         GenericContainer db = new MySQLContainer()
-                .withUsername(DB_USER)
-                .withPassword(DB_USER)
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
-                .withEnv("MYSQL_ROOT_HOST", "%");
+            .withUsername(DB_USER)
+            .withPassword(DB_USER)
+            .withLogConsumer(new Slf4jLogConsumer(LOG))
+            .withEnv("MYSQL_ROOT_HOST", "%");
         db.start();
         return db;
     }

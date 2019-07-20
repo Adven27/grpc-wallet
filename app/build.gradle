@@ -51,7 +51,7 @@ dependencies {
     implementation "org.testcontainers:testcontainers:1.11.3"
     implementation "org.testcontainers:mysql:1.11.3"
 
-    testImplementation "org.adven.concordion.ext:exam:1.1.1"
+    testImplementation "org.adven.concordion.ext:exam:3.0.0"
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
         exclude group: 'junit', module: 'junit'
